@@ -46,12 +46,14 @@ class PropertyPlaceholderBeanDefinitionParser extends AbstractPropertyLoadingBea
 		// placeholders against system properties is a function of the Environment and
 		// its current set of PropertySources.
 		if (SYSTEM_PROPERTIES_MODE_DEFAULT.equals(element.getAttribute(SYSTEM_PROPERTIES_MODE_ATTRIBUTE))) {
+			//解析properties属性，以占位符的形式
 			return PropertySourcesPlaceholderConfigurer.class;
 		}
 
 		// The user has explicitly specified a value for system-properties-mode: revert to
 		// PropertyPlaceholderConfigurer to ensure backward compatibility with 3.0 and earlier.
 		// This is deprecated; to be removed along with PropertyPlaceholderConfigurer itself.
+		//作用和上面的PropertySourcesPlaceholderConfigurer相同，已过时，因为没有整合environment对象
 		return org.springframework.beans.factory.config.PropertyPlaceholderConfigurer.class;
 	}
 

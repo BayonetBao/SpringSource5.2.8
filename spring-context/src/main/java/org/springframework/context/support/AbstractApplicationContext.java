@@ -552,6 +552,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			* 3、把解析出来的xml标签封装成BeanDefinition对象
 			* */
 			// Tell the subclass to refresh the internal bean factory.
+			//核心方法
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
 			/*
@@ -564,11 +565,10 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				// Allows post-processing of the bean factory in context subclasses.
 				postProcessBeanFactory(beanFactory);
 
-				/*
-				 * BeanDefinitionRegistryPostProcessor
-				 * BeanFactoryPostProcessor
-				 * 完成对这两个接口的调用
-				 * */
+				//ConfigurationClassPostProcessor(扫描类并封装成BD对象)，ConfigurationClassPostProcessor是BeanDefinitionRegistryPostProcessor子类
+				//BeanDefinitionRegistryPostProcessor（可以实现自己写的，Spring拓展点），BeanDefinitionRegistryPostProcessor是BeanFactoryPostProcessor子类，可以提供注册BD功能
+				//BeanFactoryPostProcessor（可以实现自己写的，Spring拓展点），只能删改BD，不能注册
+				//依次次完成对这三个接口的调用
 				// Invoke factory processors registered as beans in the context.
 				invokeBeanFactoryPostProcessors(beanFactory);
 
@@ -696,6 +696,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 */
 	protected ConfigurableListableBeanFactory obtainFreshBeanFactory() {
 		//核心方法，必须读，重要程度：5
+		//模板设计模式
+		//xml配置启动使用AbstractRefreshableApplicationContext
+		//注解配置启动使用GenericApplicationContext
 		refreshBeanFactory();
 		return getBeanFactory();
 	}
@@ -765,6 +768,11 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * <p>Must be called before singleton instantiation.
 	 */
 	protected void invokeBeanFactoryPostProcessors(ConfigurableListableBeanFactory beanFactory) {
+		//invokeBeanFactoryPostProcessors方法里调用ConfigurationClassPostProcessor
+		//ConfigurationClassPostProcessor(扫描类并封装成BD对象)，ConfigurationClassPostProcessor是BeanDefinitionRegistryPostProcessor子类
+		//BeanDefinitionRegistryPostProcessor（可以实现自己写的，Spring拓展点），BeanDefinitionRegistryPostProcessor是BeanFactoryPostProcessor子类，可以提供注册BD功能
+		//BeanFactoryPostProcessor（可以实现自己写的，Spring拓展点），只能删改BD，不能注册
+		//依次次完成对这三个接口的调用
 		PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors(beanFactory, getBeanFactoryPostProcessors());
 
 		// Detect a LoadTimeWeaver and prepare for weaving, if found in the meantime

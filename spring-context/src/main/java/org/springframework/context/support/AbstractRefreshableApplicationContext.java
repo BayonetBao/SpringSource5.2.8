@@ -132,6 +132,7 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 			//是否允许使用相同名称重新注册不同的bean实现.
 			customizeBeanFactory(beanFactory);
 			//解析xml，并把xml中的标签封装成BeanDefinition对象
+			//调用子类AbstractXmlApplicationContext的loadBeanDefinitions
 			loadBeanDefinitions(beanFactory);
 			this.beanFactory = beanFactory;
 		}

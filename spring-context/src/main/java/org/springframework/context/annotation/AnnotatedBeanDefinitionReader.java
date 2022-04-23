@@ -68,6 +68,7 @@ public class AnnotatedBeanDefinitionReader {
 	 * @see #setEnvironment(Environment)
 	 */
 	public AnnotatedBeanDefinitionReader(BeanDefinitionRegistry registry) {
+		//ConfigurationClassPostProcessor在这里注册进入容器
 		this(registry, getOrCreateEnvironment(registry));
 	}
 
@@ -85,6 +86,7 @@ public class AnnotatedBeanDefinitionReader {
 		Assert.notNull(environment, "Environment must not be null");
 		this.registry = registry;
 		this.conditionEvaluator = new ConditionEvaluator(registry, environment, null);
+		//ConfigurationClassPostProcessor在这里注册进入容器
 		AnnotationConfigUtils.registerAnnotationConfigProcessors(this.registry);
 	}
 

@@ -129,6 +129,7 @@ public abstract class AbstractXmlApplicationContext extends AbstractRefreshableC
 		//获取需要加载的xml配置文件
 		String[] configLocations = getConfigLocations();
 		if (configLocations != null) {
+			//解析xml配置文件
 			reader.loadBeanDefinitions(configLocations);
 		}
 	}
