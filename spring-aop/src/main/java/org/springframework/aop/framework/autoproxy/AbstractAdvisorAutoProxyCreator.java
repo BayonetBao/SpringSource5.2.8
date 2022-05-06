@@ -74,7 +74,7 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 	@Nullable
 	protected Object[] getAdvicesAndAdvisorsForBean(
 			Class<?> beanClass, String beanName, @Nullable TargetSource targetSource) {
-
+		//找到合格的切面，重点看
 		List<Advisor> advisors = findEligibleAdvisors(beanClass, beanName);
 		if (advisors.isEmpty()) {
 			return DO_NOT_PROXY;
@@ -93,10 +93,17 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 	 * @see #extendAdvisors
 	 */
 	protected List<Advisor> findEligibleAdvisors(Class<?> beanClass, String beanName) {
+		//找到候选的切面，其实就是一个寻找有@Aspectj注解的过程，把工程中所有有这个注解的类封装成Advisor返回
+		//AnnotationAwareAspectJAutoProxyCreator的findCandidateAdvisors()方法
 		List<Advisor> candidateAdvisors = findCandidateAdvisors();
+		//判断候选切面是否作用在当前beanClass上面，就是一个匹配过程，现在就是一个匹配
 		List<Advisor> eligibleAdvisors = findAdvisorsThatCanApply(candidateAdvisors, beanClass, beanName);
+		//针对@ASpect注解切面添加一个默认的切面 DefaultPointcutAdvisor，这个切面的advice是ExposeInvocationInterceptor，解决@Aspect注解参数传递问题，将参数放到ThreadLocal中
+		//通过ExposeInvocationInterceptor.invocation.get()可以得到
+		//AspectJAwareAdvisorAutoProxyCreator的extendAdvisors方法
 		extendAdvisors(eligibleAdvisors);
 		if (!eligibleAdvisors.isEmpty()) {
+			//对有@Order@Priority进行排序
 			eligibleAdvisors = sortAdvisors(eligibleAdvisors);
 		}
 		return eligibleAdvisors;
@@ -125,6 +132,7 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 
 		ProxyCreationContext.setCurrentProxiedBeanName(beanName);
 		try {
+			//看看当前类是否在这些切面的pointCut中调用,类和方法的match过程
 			return AopUtils.findAdvisorsThatCanApply(candidateAdvisors, beanClass);
 		}
 		finally {

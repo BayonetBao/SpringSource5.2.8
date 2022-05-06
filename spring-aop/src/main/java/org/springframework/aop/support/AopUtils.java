@@ -223,6 +223,8 @@ public abstract class AopUtils {
 	 */
 	public static boolean canApply(Pointcut pc, Class<?> targetClass, boolean hasIntroductions) {
 		Assert.notNull(pc, "Pointcut must not be null");
+		//调用ClassFilter的matches方法，判断是否匹配，重要，看matches方法，AspectJExpressionPointcut的matches方法
+		//pc就是AspectJExpressionPointcut，AspectJExpressionPointcut的matches方法
 		if (!pc.getClassFilter().matches(targetClass)) {
 			return false;
 		}
@@ -243,7 +245,7 @@ public abstract class AopUtils {
 			classes.add(ClassUtils.getUserClass(targetClass));
 		}
 		classes.addAll(ClassUtils.getAllInterfacesForClassAsSet(targetClass));
-
+		//判断类中的方法是否匹配，有些可能是方法上面有注解的拦截，所以需要判断方法是否匹配
 		for (Class<?> clazz : classes) {
 			Method[] methods = ReflectionUtils.getAllDeclaredMethods(clazz);
 			for (Method method : methods) {
@@ -286,6 +288,7 @@ public abstract class AopUtils {
 		}
 		else if (advisor instanceof PointcutAdvisor) {
 			PointcutAdvisor pca = (PointcutAdvisor) advisor;
+			//匹配需要增强的类和方法canApply（）
 			return canApply(pca.getPointcut(), targetClass, hasIntroductions);
 		}
 		else {
@@ -308,17 +311,21 @@ public abstract class AopUtils {
 		}
 		List<Advisor> eligibleAdvisors = new ArrayList<>();
 		for (Advisor candidate : candidateAdvisors) {
+			//如果是引介切面并且匹配
 			if (candidate instanceof IntroductionAdvisor && canApply(candidate, clazz)) {
 				eligibleAdvisors.add(candidate);
 			}
 		}
 		boolean hasIntroductions = !eligibleAdvisors.isEmpty();
+		//调用pointCut中的ClassFilter和methodMatcher的match方法的过程
 		for (Advisor candidate : candidateAdvisors) {
 			if (candidate instanceof IntroductionAdvisor) {
 				// already processed
 				continue;
 			}
+			//匹配需要增强的类和方法，canApply()，判断切面candidate跟类clazz是否匹配
 			if (canApply(candidate, clazz, hasIntroductions)) {
+				//如果匹配，将切面嵌入到类里面
 				eligibleAdvisors.add(candidate);
 			}
 		}

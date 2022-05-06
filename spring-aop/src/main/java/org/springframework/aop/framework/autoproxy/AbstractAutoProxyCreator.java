@@ -294,8 +294,11 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	@Override
 	public Object postProcessAfterInitialization(@Nullable Object bean, String beanName) {
 		if (bean != null) {
+			//先从缓存中拿
 			Object cacheKey = getCacheKey(bean.getClass(), beanName);
+			//三级缓存可能会提前生成代理，如果生成，则下面的逻辑不再执行
 			if (this.earlyProxyReferences.remove(cacheKey) != bean) {
+
 				return wrapIfNecessary(bean, beanName, cacheKey);
 			}
 		}
@@ -344,9 +347,15 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		}
 
 		// Create proxy if we have advice.
+		//创建当前bean的代理，如果这个bean有advice的话，重点看，重要程度5
+		//AbstractAdvisorAutoProxyCreator类的getAdvicesAndAdvisorsForBean方法
+		//找类中所有符合条件的切面
 		Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(bean.getClass(), beanName, null);
+		//如果有切面，则生成改bean的代理
 		if (specificInterceptors != DO_NOT_PROXY) {
 			this.advisedBeans.put(cacheKey, Boolean.TRUE);
+			//根据找到的切面，生成类的代理
+			//把被代理对象bean实例封装到SingletonTargetSource对象中
 			Object proxy = createProxy(
 					bean.getClass(), beanName, specificInterceptors, new SingletonTargetSource(bean));
 			this.proxyTypes.put(cacheKey, proxy.getClass());
@@ -445,10 +454,11 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		if (this.beanFactory instanceof ConfigurableListableBeanFactory) {
 			AutoProxyUtils.exposeTargetClass((ConfigurableListableBeanFactory) this.beanFactory, beanName, beanClass);
 		}
-
+		//把AnnotationAwareAspectJAutoProxyCreator中的某些属性copy到ProxyFactory中
 		ProxyFactory proxyFactory = new ProxyFactory();
+		//设置代理类型（JDK或者Cglib），设置参数在ThreadLocal中传递
 		proxyFactory.copyFrom(this);
-
+		//计算，防止不熟悉的人误用，例如没有接口的类配置成了JDK的动态代理，这里会自己计算并转为Cglib代理
 		if (!proxyFactory.isProxyTargetClass()) {
 			if (shouldProxyTargetClass(beanClass, beanName)) {
 				proxyFactory.setProxyTargetClass(true);
@@ -457,9 +467,14 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 				evaluateProxyInterfaces(beanClass, proxyFactory);
 			}
 		}
-
+		//组装advisor
+		//这里可以设置全局拦截器，通过实现MethodInterceptor接口，并且实例化提前设置到AnnotationAwareAspectJAutoProxyCreator
+		// 的setInterceptorNames方法中，要先实例化全局拦截器并且注册到Spring的postprocessor容器后再实例化AnnotationAwareAspectJAutoProxyCreator才可以
+		//可以通过BeanFactoryPostprocessor或者BeanPostProcessor完成设置功能
 		Advisor[] advisors = buildAdvisors(beanName, specificInterceptors);
+		//把advisor加入到proxyFactory
 		proxyFactory.addAdvisors(advisors);
+		//把targetSource加入到proxyFactory
 		proxyFactory.setTargetSource(targetSource);
 		customizeProxyFactory(proxyFactory);
 
@@ -509,6 +524,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	 */
 	protected Advisor[] buildAdvisors(@Nullable String beanName, @Nullable Object[] specificInterceptors) {
 		// Handle prototypes correctly...
+		//设置自定义的MethodInterceptor和Advice，这里可以设置全局拦截器，方法拦截的pointCut的match方法直接返回true
 		Advisor[] commonInterceptors = resolveInterceptorNames();
 
 		List<Object> allInterceptors = new ArrayList<>();
@@ -532,6 +548,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 
 		Advisor[] advisors = new Advisor[allInterceptors.size()];
 		for (int i = 0; i < allInterceptors.size(); i++) {
+			//使用wrap()把advice装换成MethodInterceptor并包装成advisor
 			advisors[i] = this.advisorAdapterRegistry.wrap(allInterceptors.get(i));
 		}
 		return advisors;
@@ -545,10 +562,15 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		BeanFactory bf = this.beanFactory;
 		ConfigurableBeanFactory cbf = (bf instanceof ConfigurableBeanFactory ? (ConfigurableBeanFactory) bf : null);
 		List<Advisor> advisors = new ArrayList<>();
+		//这里的interceptorNames就是自己设置的拦截器的集合——自己实现MethodInterceptor接口的类，
+		// 这里的this指的是aop的入口类，使用注解用的是AnnotationAwareAspectJAutoProxyCreator
+		//需要手动设置到AnnotationAwareAspectJAutoProxyCreator的interceptorNames中
+		//这里判断AnnotationAwareAspectJAutoProxyCreator中是否设置过interceptorNames
 		for (String beanName : this.interceptorNames) {
 			if (cbf == null || !cbf.isCurrentlyInCreation(beanName)) {
 				Assert.state(bf != null, "BeanFactory required for resolving interceptor names");
 				Object next = bf.getBean(beanName);
+				//使用wrap()把advice(就是实现MethodInterceptor接口的类，并已经设置到interceptorNames中的拦截器)包装成advisor
 				advisors.add(this.advisorAdapterRegistry.wrap(next));
 			}
 		}

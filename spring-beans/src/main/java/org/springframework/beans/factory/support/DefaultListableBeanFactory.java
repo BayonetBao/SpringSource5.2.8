@@ -877,11 +877,13 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		// Trigger initialization of all non-lazy singleton beans...
 		for (String beanName : beanNames) {
 			//把父BeanDefinition里面的属性拿到子BeanDefinition中
+			//所有的BeanDefinition对象在这里都被变为RootBeanDefinition对象
 			RootBeanDefinition bd = getMergedLocalBeanDefinition(beanName);
 			//如果不是抽象的，单例的，非懒加载的就实例化
 			if (!bd.isAbstract() && bd.isSingleton() && !bd.isLazyInit()) {
-				//判断bean是否实现了FactoryBean接口，这里可以不看
+				//判断bean是否实现了FactoryBean接口
 				if (isFactoryBean(beanName)) {
+					//给实现了FactoryBean接口的类的beanName加上&前缀
 					Object bean = getBean(FACTORY_BEAN_PREFIX + beanName);
 					if (bean instanceof FactoryBean) {
 						FactoryBean<?> factory = (FactoryBean<?>) bean;
@@ -1235,6 +1237,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			Object result = getAutowireCandidateResolver().getLazyResolutionProxyIfNecessary(
 					descriptor, requestingBeanName);
 			if (result == null) {
+				//走这里注入属性
 				result = doResolveDependency(descriptor, requestingBeanName, autowiredBeanNames, typeConverter);
 			}
 			return result;
@@ -1277,7 +1280,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			if (multipleBeans != null) {
 				return multipleBeans;
 			}
-
+			//寻找需要注入的属性
 			Map<String, Object> matchingBeans = findAutowireCandidates(beanName, type, descriptor);
 			if (matchingBeans.isEmpty()) {
 				if (isRequired(descriptor)) {
@@ -1497,6 +1500,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		}
 		for (String candidate : candidateNames) {
 			if (!isSelfReference(beanName, candidate) && isAutowireCandidate(candidate, descriptor)) {
+				//属性注入
 				addCandidateEntry(result, candidate, descriptor, requiredType);
 			}
 		}
@@ -1533,6 +1537,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			DependencyDescriptor descriptor, Class<?> requiredType) {
 
 		if (descriptor instanceof MultiElementDescriptor) {
+			//调用getBean方法,看DependencyDescriptor的resolveCandidate方法
 			Object beanInstance = descriptor.resolveCandidate(candidateName, requiredType, this);
 			if (!(beanInstance instanceof NullBean)) {
 				candidates.put(candidateName, beanInstance);

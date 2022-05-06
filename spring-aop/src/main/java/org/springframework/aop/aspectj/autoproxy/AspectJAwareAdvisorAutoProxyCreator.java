@@ -92,6 +92,7 @@ public class AspectJAwareAdvisorAutoProxyCreator extends AbstractAdvisorAutoProx
 	 */
 	@Override
 	protected void extendAdvisors(List<Advisor> candidateAdvisors) {
+		//makeAdvisorChainAspectJCapableIfNecessary方法
 		AspectJProxyUtils.makeAdvisorChainAspectJCapableIfNecessary(candidateAdvisors);
 	}
 

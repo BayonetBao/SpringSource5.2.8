@@ -45,7 +45,7 @@ import org.springframework.aop.SpringProxy;
  */
 @SuppressWarnings("serial")
 public class DefaultAopProxyFactory implements AopProxyFactory, Serializable {
-
+	//这里的config就是proxyFactory对象
 	@Override
 	public AopProxy createAopProxy(AdvisedSupport config) throws AopConfigException {
 		if (config.isOptimize() || config.isProxyTargetClass() || hasNoUserSuppliedProxyInterfaces(config)) {
@@ -57,9 +57,11 @@ public class DefaultAopProxyFactory implements AopProxyFactory, Serializable {
 			if (targetClass.isInterface() || Proxy.isProxyClass(targetClass)) {
 				return new JdkDynamicAopProxy(config);
 			}
+			//cglib代理
 			return new ObjenesisCglibAopProxy(config);
 		}
 		else {
+			//Jdk代理
 			return new JdkDynamicAopProxy(config);
 		}
 	}

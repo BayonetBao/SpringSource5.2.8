@@ -153,8 +153,10 @@ public class ProxyConfig implements Serializable {
 	 */
 	public void copyFrom(ProxyConfig other) {
 		Assert.notNull(other, "Other ProxyConfig object must not be null");
+		//设置代理类型（JDK或者Cglib），在注解@EnableAspectJAutoProxy(proxyTargetClass = false,exposeProxy = true)设置
 		this.proxyTargetClass = other.proxyTargetClass;
 		this.optimize = other.optimize;
+		//设置参数是否在ThreadLocal中传递（true or false），该参数在代理对象的invoke方法中起作用
 		this.exposeProxy = other.exposeProxy;
 		this.frozen = other.frozen;
 		this.opaque = other.opaque;

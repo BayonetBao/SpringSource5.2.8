@@ -156,11 +156,12 @@ final class JdkDynamicAopProxy implements AopProxy, InvocationHandler, Serializa
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 		Object oldProxy = null;
 		boolean setProxyContext = false;
-
+		//从代理工厂中拿到TargetSource对象，该对象包装了被代理的实例bean
 		TargetSource targetSource = this.advised.targetSource;
 		Object target = null;
 
 		try {
+			//被代理对象的equals方法和hashCode方法不能被代理，不会走切面
 			if (!this.equalsDefined && AopUtils.isEqualsMethod(method)) {
 				// The target does not implement the equals(Object) method itself.
 				return equals(args[0]);
@@ -180,7 +181,7 @@ final class JdkDynamicAopProxy implements AopProxy, InvocationHandler, Serializa
 			}
 
 			Object retVal;
-
+			//该属性默认为false，如果设置为true（在@EnableAspectJAutoProxy(proxyTargetClass = false,exposeProxy = true)设置），则把代理对象设置到ThreadLocal中
 			if (this.advised.exposeProxy) {
 				// Make invocation available if necessary.
 				oldProxy = AopContext.setCurrentProxy(proxy);
@@ -193,10 +194,13 @@ final class JdkDynamicAopProxy implements AopProxy, InvocationHandler, Serializa
 			Class<?> targetClass = (target != null ? target.getClass() : null);
 
 			// Get the interception chain for this method.
+			//从代理工厂中拿过滤器链 Object是一个MethodInterceptor类型的对象，其实就是一个advice对象
+			//这里的advised是一个代理工厂ProxyFactory，里面封装了被代理对象和被代理对象的所有切面
 			List<Object> chain = this.advised.getInterceptorsAndDynamicInterceptionAdvice(method, targetClass);
 
 			// Check whether we have any advice. If we don't, we can fallback on direct
 			// reflective invocation of the target, and avoid creating a MethodInvocation.
+			//如果该方法没有执行链，则说明这个方法不需要被拦截，则直接反射调用
 			if (chain.isEmpty()) {
 				// We can skip creating a MethodInvocation: just invoke the target directly
 				// Note that the final invoker must be an InvokerInterceptor so we know it does
@@ -206,9 +210,11 @@ final class JdkDynamicAopProxy implements AopProxy, InvocationHandler, Serializa
 			}
 			else {
 				// We need to create a method invocation...
+				//增强逻辑
 				MethodInvocation invocation =
 						new ReflectiveMethodInvocation(proxy, target, method, args, targetClass, chain);
 				// Proceed to the joinpoint through the interceptor chain.
+				//链式调用+火炬传递
 				retVal = invocation.proceed();
 			}
 
