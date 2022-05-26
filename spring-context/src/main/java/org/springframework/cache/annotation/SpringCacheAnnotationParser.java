@@ -75,11 +75,13 @@ public class SpringCacheAnnotationParser implements CacheAnnotationParser, Seria
 	@Nullable
 	public Collection<CacheOperation> parseCacheAnnotations(Method method) {
 		DefaultCacheConfig defaultConfig = new DefaultCacheConfig(method.getDeclaringClass());
+		//解析方法
 		return parseCacheAnnotations(defaultConfig, method);
 	}
 
 	@Nullable
 	private Collection<CacheOperation> parseCacheAnnotations(DefaultCacheConfig cachingConfig, AnnotatedElement ae) {
+		//解析方法
 		Collection<CacheOperation> ops = parseCacheAnnotations(cachingConfig, ae, false);
 		if (ops != null && ops.size() > 1) {
 			// More than one operation found -> local declarations override interface-declared ones...
@@ -101,7 +103,7 @@ public class SpringCacheAnnotationParser implements CacheAnnotationParser, Seria
 		if (anns.isEmpty()) {
 			return null;
 		}
-
+		//根据不同注解进行解析
 		final Collection<CacheOperation> ops = new ArrayList<>(1);
 		anns.stream().filter(ann -> ann instanceof Cacheable).forEach(
 				ann -> ops.add(parseCacheableAnnotation(ae, cachingConfig, (Cacheable) ann)));

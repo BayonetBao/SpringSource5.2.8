@@ -43,8 +43,10 @@ abstract class CacheOperationSourcePointcut extends StaticMethodMatcherPointcut 
 
 
 	@Override
+	//方法拦截匹配
 	public boolean matches(Method method, Class<?> targetClass) {
 		CacheOperationSource cas = getCacheOperationSource();
+		//AbstractFallbackCacheOperationSource的getCacheOperations方法
 		return (cas != null && !CollectionUtils.isEmpty(cas.getCacheOperations(method, targetClass)));
 	}
 

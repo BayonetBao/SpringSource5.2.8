@@ -43,6 +43,7 @@ public class ProxyCachingConfiguration extends AbstractCachingConfiguration {
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public BeanFactoryCacheOperationSourceAdvisor cacheAdvisor() {
 		BeanFactoryCacheOperationSourceAdvisor advisor = new BeanFactoryCacheOperationSourceAdvisor();
+		//设置属性解析器，解析业务方法上面的注解属性封装成对象
 		advisor.setCacheOperationSource(cacheOperationSource());
 		advisor.setAdvice(cacheInterceptor());
 		if (this.enableCaching != null) {
@@ -53,6 +54,7 @@ public class ProxyCachingConfiguration extends AbstractCachingConfiguration {
 
 	@Bean
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
+	//这个类上是@Configuration注解，会走代理从一级缓存中获取对象
 	public CacheOperationSource cacheOperationSource() {
 		return new AnnotationCacheOperationSource();
 	}

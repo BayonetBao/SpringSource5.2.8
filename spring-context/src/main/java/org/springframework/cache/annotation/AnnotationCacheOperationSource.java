@@ -69,6 +69,7 @@ public class AnnotationCacheOperationSource extends AbstractFallbackCacheOperati
 	 */
 	public AnnotationCacheOperationSource(boolean publicMethodsOnly) {
 		this.publicMethodsOnly = publicMethodsOnly;
+		//设置缓存注解解析类
 		this.annotationParsers = Collections.singleton(new SpringCacheAnnotationParser());
 	}
 
@@ -122,6 +123,8 @@ public class AnnotationCacheOperationSource extends AbstractFallbackCacheOperati
 	@Override
 	@Nullable
 	protected Collection<CacheOperation> findCacheOperations(Method method) {
+		//determineCacheOperations的类的构造方法中设置了缓存注解的解析类
+		//看parseCacheAnnotations(method)，解析方法
 		return determineCacheOperations(parser -> parser.parseCacheAnnotations(method));
 	}
 

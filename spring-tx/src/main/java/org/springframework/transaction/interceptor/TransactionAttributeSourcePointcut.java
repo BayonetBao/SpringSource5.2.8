@@ -37,13 +37,16 @@ import org.springframework.util.ObjectUtils;
 abstract class TransactionAttributeSourcePointcut extends StaticMethodMatcherPointcut implements Serializable {
 
 	protected TransactionAttributeSourcePointcut() {
+		//设置ClassFilter，该ClassFilter其实什么都没做，真正的校验逻辑在方法匹配上
 		setClassFilter(new TransactionAttributeSourceClassFilter());
 	}
 
 
 	@Override
+	//只要方法上面能拿到事务属性就返回true，就生成代理，这里是真正的校验逻辑
 	public boolean matches(Method method, Class<?> targetClass) {
 		TransactionAttributeSource tas = getTransactionAttributeSource();
+		//重点看AbstractFallbackTransactionAttributeSource的getTransactionAttribute方法
 		return (tas == null || tas.getTransactionAttribute(method, targetClass) != null);
 	}
 

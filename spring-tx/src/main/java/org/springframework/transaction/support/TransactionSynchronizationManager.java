@@ -207,11 +207,13 @@ public abstract class TransactionSynchronizationManager {
 	 */
 	public static Object unbindResource(Object key) throws IllegalStateException {
 		Object actualKey = TransactionSynchronizationUtils.unwrapResourceIfNecessary(key);
+		//解除绑定关系，这里的value是原来事务的连接对象
 		Object value = doUnbindResource(actualKey);
 		if (value == null) {
 			throw new IllegalStateException(
 					"No value for key [" + actualKey + "] bound to thread [" + Thread.currentThread().getName() + "]");
 		}
+		//返回老的连接对象
 		return value;
 	}
 

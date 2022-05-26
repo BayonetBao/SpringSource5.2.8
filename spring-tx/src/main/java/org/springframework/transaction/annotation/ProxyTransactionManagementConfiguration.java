@@ -43,10 +43,14 @@ public class ProxyTransactionManagementConfiguration extends AbstractTransaction
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public BeanFactoryTransactionAttributeSourceAdvisor transactionAdvisor(
 			TransactionAttributeSource transactionAttributeSource, TransactionInterceptor transactionInterceptor) {
-
+		//创建事务切面
 		BeanFactoryTransactionAttributeSourceAdvisor advisor = new BeanFactoryTransactionAttributeSourceAdvisor();
+		//切面里面设置处理事务属性对象
 		advisor.setTransactionAttributeSource(transactionAttributeSource);
+		//设置切面的advice
 		advisor.setAdvice(transactionInterceptor);
+		//设置切面排序，enableTx控制排序，是@EnableTransactionManagement注解的属性值，只要有@EnableTransactionManagement
+		// 注解，enableTx就不等于null
 		if (this.enableTx != null) {
 			advisor.setOrder(this.enableTx.<Integer>getNumber("order"));
 		}
@@ -55,6 +59,7 @@ public class ProxyTransactionManagementConfiguration extends AbstractTransaction
 
 	@Bean
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
+	//创建事务属性处理器，处理方法上的注解，并封装成对象
 	public TransactionAttributeSource transactionAttributeSource() {
 		return new AnnotationTransactionAttributeSource();
 	}
@@ -62,8 +67,12 @@ public class ProxyTransactionManagementConfiguration extends AbstractTransaction
 	@Bean
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public TransactionInterceptor transactionInterceptor(TransactionAttributeSource transactionAttributeSource) {
+		//创建事务切面
 		TransactionInterceptor interceptor = new TransactionInterceptor();
+		//事务属性处理器设置到advice中
 		interceptor.setTransactionAttributeSource(transactionAttributeSource);
+		//把事务管理器设置到advice中，事务管理器在父类中定义，事务管理器可以通过注入设置（该做法不常用），如果有就用
+		// 如果为空，这里不影响程序，只需要在Spring容器中实例化一个TransactionManager类型，后面会自动匹配
 		if (this.txManager != null) {
 			interceptor.setTransactionManager(this.txManager);
 		}

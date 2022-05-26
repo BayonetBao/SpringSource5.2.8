@@ -289,9 +289,11 @@ public class ContextLoader {
 						ApplicationContext parent = loadParentContext(servletContext);
 						cwac.setParent(parent);
 					}
+					//启动spring容器，调用refresh方法
 					configureAndRefreshWebApplicationContext(cwac, servletContext);
 				}
 			}
+			//将spring上下文设置到servlet上下文中
 			servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, this.context);
 
 			ClassLoader ccl = Thread.currentThread().getContextClassLoader();

@@ -172,7 +172,11 @@ public abstract class JdbcTransactionObjectSupport implements SavepointManager, 
 	public void rollbackToSavepoint(Object savepoint) throws TransactionException {
 		ConnectionHolder conHolder = getConnectionHolderForSavepoint();
 		try {
+			//这里数据真正回滚，回滚到回滚点
 			conHolder.getConnection().rollback((Savepoint) savepoint);
+			//设置外层事务回滚标识，后续在提交逻辑提交，与required传播属性外层事务吞并内存事务异
+			// 常相反，这里就算内层事务异常（外层事务吞并内层事务异常），依然会触发提交（如果内层两个事务，一个异常，一个正常，
+			// 且外层事务吞并异常，则内层正常事务会提交，异常事务回滚）
 			conHolder.resetRollbackOnly();
 		}
 		catch (Throwable ex) {

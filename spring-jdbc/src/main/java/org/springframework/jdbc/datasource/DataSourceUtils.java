@@ -211,6 +211,7 @@ public abstract class DataSourceUtils {
 			int currentIsolation = con.getTransactionIsolation();
 			if (currentIsolation != definition.getIsolationLevel()) {
 				previousIsolationLevel = currentIsolation;
+				//设置隔离级别
 				con.setTransactionIsolation(definition.getIsolationLevel());
 			}
 		}
@@ -241,6 +242,7 @@ public abstract class DataSourceUtils {
 					logger.debug("Resetting isolation level of JDBC Connection [" +
 							con + "] to " + previousIsolationLevel);
 				}
+				//恢复隔离级别
 				con.setTransactionIsolation(previousIsolationLevel);
 			}
 

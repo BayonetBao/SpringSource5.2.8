@@ -58,7 +58,7 @@ public abstract class AspectJProxyUtils {
 			//这里是一个全局拦截代理，只要是@Aspect注解生成的代理都会被拦截
 			//ExposeInvocationInterceptor.ADVISOR就是DefaultPointcutAdvisor，它的 advice是ExposeInvocationInterceptor
 			//ExposeInvocationInterceptor的invoke(MethodInvocation mi)方法把拦截的方法对象放到ThreadLocal中
-			//在增强方法中使用ExposeInvocationInterceptor.invocation.get()可直接获取当前正在代理的方法对象
+			//在增强方法中使用ExposeInvocationInterceptor.currentInvocation()可直接获取当前正在代理的方法对象
 			if (foundAspectJAdvice && !advisors.contains(ExposeInvocationInterceptor.ADVISOR)) {
 				advisors.add(0, ExposeInvocationInterceptor.ADVISOR);
 				return true;

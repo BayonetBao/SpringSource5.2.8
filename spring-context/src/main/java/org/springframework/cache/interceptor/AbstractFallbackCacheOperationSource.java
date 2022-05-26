@@ -96,6 +96,7 @@ public abstract class AbstractFallbackCacheOperationSource implements CacheOpera
 			return (cached != NULL_CACHING_ATTRIBUTE ? cached : null);
 		}
 		else {
+			//计算缓存操作
 			Collection<CacheOperation> cacheOps = computeCacheOperations(method, targetClass);
 			if (cacheOps != null) {
 				if (logger.isTraceEnabled()) {
@@ -134,12 +135,14 @@ public abstract class AbstractFallbackCacheOperationSource implements CacheOpera
 		Method specificMethod = AopUtils.getMostSpecificMethod(method, targetClass);
 
 		// First try is the method in the target class.
+		//首先查看方法上是否有缓存注解，看findCacheOperations方法
 		Collection<CacheOperation> opDef = findCacheOperations(specificMethod);
 		if (opDef != null) {
 			return opDef;
 		}
 
 		// Second try is the caching operation on the target class.
+		//方法没有注解则看类上有没有
 		opDef = findCacheOperations(specificMethod.getDeclaringClass());
 		if (opDef != null && ClassUtils.isUserLevelMethod(method)) {
 			return opDef;

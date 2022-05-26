@@ -343,6 +343,7 @@ public abstract class CacheAspectSupport extends AbstractCacheInvoker
 			if (cacheOperationSource != null) {
 				Collection<CacheOperation> operations = cacheOperationSource.getCacheOperations(method, targetClass);
 				if (!CollectionUtils.isEmpty(operations)) {
+					//执行
 					return execute(invoker, method,
 							new CacheOperationContexts(operations, method, args, target, targetClass));
 				}
@@ -395,42 +396,51 @@ public abstract class CacheAspectSupport extends AbstractCacheInvoker
 
 
 		// Process any early evictions
+		//优先处理@CacheEvicts的逻辑，其实就是调clear方法
 		processCacheEvicts(contexts.get(CacheEvictOperation.class), true,
 				CacheOperationExpressionEvaluator.NO_RESULT);
 
 		// Check if we have a cached item matching the conditions
+		//处理@Cacheable的逻辑，其实就是调get方法
 		Cache.ValueWrapper cacheHit = findCachedItem(contexts.get(CacheableOperation.class));
 
 		// Collect puts from any @Cacheable miss, if no cached item is found
 		List<CachePutRequest> cachePutRequests = new LinkedList<>();
+		//如果缓存没命中或者不是使用的@Cacheable注解
 		if (cacheHit == null) {
+			//处理@Cacheable的逻辑，收集插入请求，插入缓存的值需要调被代理方法
 			collectPutRequests(contexts.get(CacheableOperation.class),
 					CacheOperationExpressionEvaluator.NO_RESULT, cachePutRequests);
 		}
 
 		Object cacheValue;
 		Object returnValue;
-
+		//如果缓存命中
 		if (cacheHit != null && !hasCachePut(contexts)) {
 			// If there are no put requests, just use the cache hit
 			cacheValue = cacheHit.get();
+			//直接返回缓存中的值
 			returnValue = wrapCacheValue(method, cacheValue);
 		}
 		else {
 			// Invoke the method if we don't have a cache hit
+			//这里调被代理方法
 			returnValue = invokeOperation(invoker);
 			cacheValue = unwrapReturnValue(returnValue);
 		}
 
 		// Collect any explicit @CachePuts
+		//处理@CachePut注解，收集put请求
 		collectPutRequests(contexts.get(CachePutOperation.class), cacheValue, cachePutRequests);
 
 		// Process any collected put requests, either from @CachePut or a @Cacheable miss
+		//处理put请求，其实就是调put方法
 		for (CachePutRequest cachePutRequest : cachePutRequests) {
 			cachePutRequest.apply(cacheValue);
 		}
 
 		// Process any late evictions
+		//后置删除
 		processCacheEvicts(contexts.get(CacheEvictOperation.class), false, cacheValue);
 
 		return returnValue;

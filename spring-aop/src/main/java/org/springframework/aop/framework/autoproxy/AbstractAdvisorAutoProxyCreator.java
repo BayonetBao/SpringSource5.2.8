@@ -99,7 +99,7 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 		//判断候选切面是否作用在当前beanClass上面，就是一个匹配过程，现在就是一个匹配
 		List<Advisor> eligibleAdvisors = findAdvisorsThatCanApply(candidateAdvisors, beanClass, beanName);
 		//针对@ASpect注解切面添加一个默认的切面 DefaultPointcutAdvisor，这个切面的advice是ExposeInvocationInterceptor，解决@Aspect注解参数传递问题，将参数放到ThreadLocal中
-		//通过ExposeInvocationInterceptor.invocation.get()可以得到
+		//通过ExposeInvocationInterceptor.currentInvocation()可以得到
 		//AspectJAwareAdvisorAutoProxyCreator的extendAdvisors方法
 		extendAdvisors(eligibleAdvisors);
 		if (!eligibleAdvisors.isEmpty()) {
